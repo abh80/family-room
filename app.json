@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "family-room",
+    "slug": "family-room",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  },
+  "name": "family-room"
+}
