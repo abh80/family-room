@@ -120,7 +120,6 @@ export default function login({ navigator, thisArg }) {
       setError("Room ID is not proper, check out with the host");
       return;
     }
-    console.log(apiUrl + "validate/" + roomId);
     fetch(apiUrl + "validate/" + roomId)
       .then((res) => {
         if (res.status != 200) {

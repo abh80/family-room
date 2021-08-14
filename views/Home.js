@@ -34,7 +34,8 @@ export default class Home extends Component {
     }).start();
   }
   componentDidMount() {
-    /* this.props.navigation.navigate("Chat", {
+    /*
+     this.props.navigation.navigate("Chat", {
       roomId: "123456789012",
       username: "test",
     });

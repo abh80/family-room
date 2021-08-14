@@ -19,7 +19,7 @@ export default function Message({ isMe, props }) {
           style={{ fontFamily: "Roboto-Regular", fontSize: 16, color: "black" }}
         >
           {" "}
-          has joined the chat!
+          {props.type == 101 ? "has joined the chat!" : "has left the chat!"}
         </Text>
       </Text>
     </View>
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     color: "#555657",
   },
   systemMessage: {
-    width: "50%",
+    width: "70%",
     maxHeight: 100,
     backgroundColor: "#dadfe8",
     alignSelf: "center",
