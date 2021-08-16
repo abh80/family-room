@@ -118,7 +118,7 @@ export default class Chat extends React.Component {
         break;
       }
       case 19: {
-        if (this.state.baseAuthor == this.state.baseAuthor) return;
+        if (this.state.baseAuthor == data.payload.baseAuthor) return;
         if (
           this.state.usersTyping.find(
             (x) => x.baseAuthor === data.payload.baseAuthor
