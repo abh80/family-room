@@ -14,8 +14,14 @@ export default class App extends React.Component {
     return (
       <NavigationContainer>
         <Stack.Navigator initialRouteName="Home">
-          <Stack.Screen name="Home" component={Home} />
-          <Stack.Screen name="Chat" component={Chat} />
+          <Stack.Screen
+            name="Home"
+            component={(props) => <Home {...props} />}
+          />
+          <Stack.Screen
+            name="Chat"
+            component={(props) => <Chat {...props} />}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     );

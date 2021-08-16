@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Animated,
 } from "react-native";
+import Register from "../components/register";
 import Login from "../components/login";
 
 export default class Home extends Component {
@@ -33,14 +34,7 @@ export default class Home extends Component {
       useNativeDriver: true,
     }).start();
   }
-  componentDidMount() {
-    /*
-     this.props.navigation.navigate("Chat", {
-      roomId: "123456789012",
-      username: "test",
-    });
-    */
-  }
+  componentDidMount() {}
   render() {
     return (
       <View style={styles.container}>
@@ -59,7 +53,13 @@ export default class Home extends Component {
           >
             <Text style={styles.join}>Join</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button1}>
+          <TouchableOpacity
+            onPress={() => {
+              this.setState({ showLogin: "register" });
+              this.fadeInBackscreen();
+            }}
+            style={styles.button1}
+          >
             <Text style={styles.start}>Start</Text>
           </TouchableOpacity>
         </View>
@@ -78,7 +78,11 @@ export default class Home extends Component {
               { opacity: this.state.backscreenOpacity },
             ]}
           >
-            <Login thisArg={this} navigator={this.props.navigation} />
+            {this.state.showLogin == "register" ? (
+              <Register navigator={this.props.navigation} thisArg={this} />
+            ) : (
+              <Login navigator={this.props.navigation} thisArg={this} />
+            )}
           </Animated.View>
         ) : null}
       </View>

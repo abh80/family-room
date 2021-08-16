@@ -2,20 +2,19 @@ import React, { useState } from "react";
 import {
   View,
   StyleSheet,
-  Text,
-  TouchableOpacity,
-  TextInput,
   Animated,
+  Text,
+  TextInput,
+  TouchableOpacity,
 } from "react-native";
-
 import { checkRoomID, checkUserName, apiUrl } from "./../Util";
-
-export default function login({ navigator, thisArg }) {
+export default function register({ navigator, thisArg }) {
   const [input, setInput] = useState(null);
   const [error, setError] = useState(null);
   const [room, setRoom] = useState(null);
-  const [x, setCoord] = useState(new Animated.Value(0));
-  const [nx, setCoordn] = useState(new Animated.Value(800));
+  const [name, setName] = useState(null);
+  const [x, setCoord] = useState(new Animated.Value(800));
+  const [nx, setCoordn] = useState(new Animated.Value(0));
   const [part2, setPart2] = useState(false);
   function move(v, n) {
     Animated.timing(v, {
@@ -29,41 +28,34 @@ export default function login({ navigator, thisArg }) {
       onStartShouldSetResponder={(e) => e.stopPropagation()}
       style={styles.login_component}
     >
-      {!part2 ? (
+      {part2 ? (
         <Animated.View style={{ marginLeft: x, alignItems: "center" }}>
-          <Text style={styles.JoinARoomText}>Join a room</Text>
-          <TextInput
-            placeholder="Room ID"
-            type="number"
-            keyboardType="numeric"
-            style={styles.input}
-            onSubmitEditing={(e) => {
-              const roomId = e.nativeEvent.text;
-              handleJoinRequest(roomId);
-            }}
-            onChange={(e) => {
-              setInput(e.nativeEvent.text);
-              error ? setError(null) : null;
-            }}
-          />
+          <Text style={styles.StartARoomText}>Room Information</Text>
+
+          <Text selectable style={styles.roomID}>
+            {room}
+          </Text>
           {error ? <Text style={styles.alertText}>{error}</Text> : null}
           <TouchableOpacity
             onPress={() => {
-              const roomId = input;
-              handleJoinRequest(roomId);
+              thisArg.setState({ showLogin: false });
+              navigator.navigate("Chat", {
+                roomId: room,
+                username: name,
+              });
             }}
             style={styles.button}
           >
-            <Text style={styles.buttonText}>Join</Text>
+            <Text style={styles.buttonText}>Start</Text>
           </TouchableOpacity>
         </Animated.View>
       ) : (
         <Animated.View style={{ marginLeft: nx, alignItems: "center" }}>
-          <Text style={styles.JoinARoomText}>Choose a Name to Enter</Text>
-
+          <Text style={styles.StartARoomText}>Choose a Name to Enter</Text>
           <TextInput
             placeholder="Jack Ryan"
             style={styles.input}
+            keyboardType="default"
             onSubmitEditing={(e) => {
               let name = e.nativeEvent.text;
               name = name?.trim();
@@ -76,11 +68,7 @@ export default function login({ navigator, thisArg }) {
                 );
                 return;
               }
-              thisArg.setState({ showLogin: false });
-              navigator.navigate("Chat", {
-                username: name,
-                roomId: room,
-              });
+              createRoom(name);
             }}
             onChange={(e) => {
               setInput(e.nativeEvent.text);
@@ -101,42 +89,44 @@ export default function login({ navigator, thisArg }) {
                 );
                 return;
               }
-              thisArg.setState({ showLogin: false });
-              navigator.navigate("Chat", {
-                username: name,
-                roomId: room,
-              });
+              createRoom(name);
             }}
             style={styles.button}
           >
-            <Text style={styles.buttonText}>Join</Text>
+            <Text style={styles.buttonText}>Start</Text>
           </TouchableOpacity>
         </Animated.View>
       )}
     </View>
   );
-  function handleJoinRequest(roomId) {
-    if (!checkRoomID(roomId)) {
-      setError("Room ID is not proper, check out with the host");
-      return;
-    }
-    fetch(apiUrl + "validate/" + roomId)
-      .then((res) => {
-        if (res.status != 200) {
-          setError("Room ID is not valid, check out with the host");
+  function createRoom(userName) {
+    fetch(apiUrl + "rooms/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: userName,
+      }),
+    })
+      .then((xi) => {
+        if (xi.status != 200) {
+          setError("Room creation failed");
           return;
         }
-        setError(null);
-        setInput(null);
-        setRoom(roomId);
-        move(x, -800);
-
-        setTimeout(() => {
-          setPart2(true);
-          move(nx, 0);
-        }, 300);
+        xi.json().then((v) => {
+          setRoom(v.roomId.toString());
+          setName(userName);
+          move(nx, -800);
+          setError(null);
+          setInput(null);
+          setTimeout(() => {
+            setPart2(true);
+            move(x, 0);
+          }, 300);
+        });
       })
-      .catch((e) => {
+      .catch(() => {
         setError("Temporary error, try again later");
         return;
       });
@@ -170,7 +160,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     overflow: "hidden",
   },
-  JoinARoomText: {
+  StartARoomText: {
     fontSize: 20,
     fontFamily: "Roboto-Bold",
   },
@@ -190,5 +180,10 @@ const styles = StyleSheet.create({
     fontSize: 25,
     marginTop: 5,
     textAlign: "center",
+  },
+  roomID: {
+    fontSize: 20,
+    fontFamily: "Roboto-Regular",
+    marginTop: 15,
   },
 });

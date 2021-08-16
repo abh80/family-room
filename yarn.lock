@@ -5001,6 +5001,11 @@ react-native-splashscreen@^1.0.0:
   resolved "https://registry.yarnpkg.com/react-native-splashscreen/-/react-native-splashscreen-1.0.0.tgz#732c498fe7787554ecf331094135ac6124b82042"
   integrity sha1-cyxJj+d4dVTs8zEJQTWsYSS4IEI=
 
+react-native-typing-animation@^0.1.7:
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/react-native-typing-animation/-/react-native-typing-animation-0.1.7.tgz#8f2cf08d9400ae543a110292eb7d71523dda5528"
+  integrity sha512-4H3rF9M+I2yAZpYJcY0Mb29TXkn98QK12rrKSY6LZj1BQD9NNmRZuNXzwX4XHapsIz+N/J8M3p27FOQPbfzqeg==
+
 react-native-unimodules@~0.14.5:
   version "0.14.6"
   resolved "https://registry.yarnpkg.com/react-native-unimodules/-/react-native-unimodules-0.14.6.tgz#5460a34d44e880909cb63d9bb4c4d77ff158bf0a"

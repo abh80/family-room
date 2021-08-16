@@ -4,8 +4,14 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import send_icon from "../assets/send_icon.png";
 import MessageContainer from "../components/message";
 import { wsUrl } from "../Util";
+import Typing from "../components/typing_indicator";
 
 export default class Chat extends React.Component {
+  componentWillUnmount() {
+    this.timeout ? clearTimeout(this.timeout) : null;
+    this.ws.close();
+    this.ws = null;
+  }
   constructor(props) {
     super(props);
     this.flatlistRef = React.createRef();
@@ -14,7 +20,11 @@ export default class Chat extends React.Component {
       messages: [],
       baseAuthor: "",
       token: null,
+      usersTyping: [],
+      isMeTyping: false,
     };
+    this.timeout = null;
+    this.connectionAttempt = 0;
   }
   initWs() {
     this.ws = new WebSocket(wsUrl);
@@ -30,6 +40,62 @@ export default class Chat extends React.Component {
       );
     };
     this.ws.onmessage = (msg) => this.handleSocketMessage(msg);
+    this.ws.onclose = () => {
+      if (this.connectionAttempt >= 3) {
+        this.props.navigation.goBack();
+        alert("Connection lost to server, please try again");
+        return;
+      }
+      setTimeout(() => {
+        this.initWs();
+        this.connectionAttempt += 1;
+      }, 1000 * this.connectionAttempt + 1);
+    };
+  }
+  stopTyping() {
+    if (!this.state.isMeTyping) return;
+    this.setState({ isMeTyping: false });
+    this.ws.send(
+      JSON.stringify({
+        code: 62,
+        payload: {
+          roomId: this.props.route.params.roomId,
+          token: this.state.token,
+        },
+      })
+    );
+  }
+  startTyping() {
+    if (this.state.isMeTyping) return;
+    this.setState({ isMeTyping: true });
+    this.ws.send(
+      JSON.stringify({
+        code: 61,
+        payload: {
+          roomId: this.props.route.params.roomId,
+          token: this.state.token,
+        },
+      })
+    );
+  }
+  handleTyping(m) {
+    if (!m) m = "";
+    if (!m.trim()) {
+      this.stopTyping();
+      return;
+    }
+
+    if (this.state.isMeTyping) {
+      if (this.timeout) clearTimeout(this.timeout);
+      this.timeout = setTimeout(() => {
+        this.stopTyping();
+      }, 5000);
+      return;
+    }
+    this.startTyping();
+    this.timeout = setTimeout(() => {
+      this.stopTyping();
+    }, 5000);
   }
   handleSocketMessage(msg) {
     const data = JSON.parse(msg.data);
@@ -51,6 +117,28 @@ export default class Chat extends React.Component {
         this.setState({ messages: [...this.state.messages, data.payload] });
         break;
       }
+      case 19: {
+        if (this.state.baseAuthor == this.state.baseAuthor) return;
+        if (
+          this.state.usersTyping.find(
+            (x) => x.baseAuthor === data.payload.baseAuthor
+          )
+        )
+          return;
+
+        this.setState({
+          usersTyping: [...this.state.usersTyping, data.payload],
+        });
+        break;
+      }
+      case 18: {
+        this.setState({
+          usersTyping: this.state.usersTyping.filter(
+            (x) => x.baseAuthor !== data.payload.baseAuthor
+          ),
+        });
+        break;
+      }
     }
   }
   sendMessage() {
@@ -67,8 +155,15 @@ export default class Chat extends React.Component {
     );
     this.messageInput.clear();
     this.setState({ message: "" });
+    this.handleTyping(null);
   }
   componentDidMount() {
+    const { username, roomId } = this.props.route.params;
+    if (!username || !roomId) {
+      this.props.navigation.goBack();
+      alert("A fatal error occured, please try again");
+      return;
+    }
     this.initWs();
   }
   render() {
@@ -105,9 +200,9 @@ export default class Chat extends React.Component {
                   animated: true,
                 })
               }
+              keyExtractor={(item, index) => index.toString()}
               renderItem={({ item }) => (
                 <MessageContainer
-                  key={Math.floor(Math.random() * 100000)}
                   props={item}
                   isMe={item.baseAuthor === this.state.baseAuthor}
                 />
@@ -115,12 +210,18 @@ export default class Chat extends React.Component {
             />
           ) : null}
         </View>
+        {this.state.usersTyping.length ? (
+          <Typing users={this.state.usersTyping} />
+        ) : null}
         <View style={styles.message_input_holder}>
           <TextInput
             ref={(ref) => (this.messageInput = ref)}
             style={styles.message_input}
             placeholder="Say Hi"
-            onChange={(e) => this.setState({ message: e.nativeEvent.text })}
+            onChange={(e) => {
+              this.setState({ message: e.nativeEvent.text });
+              this.handleTyping(e.nativeEvent.text);
+            }}
             onSubmitEditing={() => this.sendMessage()}
           />
           <TouchableOpacity onPress={() => this.sendMessage()}>
