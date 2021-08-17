@@ -1,8 +1,14 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableWithoutFeedback,
+} from "react-native";
 import moment from "moment";
 
-export default function Message({ isMe, props }) {
+export default function Message({ isMe, props, thisArg }) {
   return props.systemMessage ? (
     <View style={styles.systemMessage}>
       <Text style={{ textAlign: "center" }}>
@@ -38,6 +44,23 @@ export default function Message({ isMe, props }) {
         </Text>
       ) : null}
       <Text style={styles.message_content}>{props.content}</Text>
+      {props.attachment ? (
+        <TouchableWithoutFeedback
+          onPress={() => {
+            thisArg.setState({ imagePreview: props.attachment });
+            thisArg.handleAnimation();
+          }}
+        >
+          <Image
+            style={{
+              width: 200,
+              height: 150,
+              resizeMode: "contain",
+            }}
+            source={{ uri: `data:image;base64,${props.attachment}` }}
+          />
+        </TouchableWithoutFeedback>
+      ) : null}
       <Text style={styles.time_content}>
         {moment(Date.now()).format("hh:mm")}
       </Text>

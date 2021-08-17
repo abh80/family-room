@@ -1,15 +1,25 @@
 import React from "react";
-import { View, StyleSheet, TextInput, Image, FlatList } from "react-native";
+import {
+  View,
+  StyleSheet,
+  TextInput,
+  Image,
+  FlatList,
+  Animated,
+  Easing,
+} from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import send_icon from "../assets/send_icon.png";
+import attachment_icon from "../assets/attachment.png";
 import MessageContainer from "../components/message";
 import { wsUrl } from "../Util";
 import Typing from "../components/typing_indicator";
+import * as ImagePicker from "expo-image-picker";
 
 export default class Chat extends React.Component {
   componentWillUnmount() {
-    this.timeout ? clearTimeout(this.timeout) : null;
     this.ws.close();
+    this.timeout ? clearTimeout(this.timeout) : null;
     this.ws = null;
   }
   constructor(props) {
@@ -22,6 +32,8 @@ export default class Chat extends React.Component {
       token: null,
       usersTyping: [],
       isMeTyping: false,
+      imagePreview: null,
+      imageAnimation: new Animated.Value(0),
     };
     this.timeout = null;
     this.connectionAttempt = 0;
@@ -46,6 +58,7 @@ export default class Chat extends React.Component {
         alert("Connection lost to server, please try again");
         return;
       }
+
       setTimeout(() => {
         this.initWs();
         this.connectionAttempt += 1;
@@ -141,8 +154,8 @@ export default class Chat extends React.Component {
       }
     }
   }
-  sendMessage() {
-    if (!this.state.message.trim()) return;
+  sendMessage(attachment) {
+    if (!this.state.message.trim() && !attachment) return;
     this.ws.send(
       JSON.stringify({
         code: 76,
@@ -150,12 +163,29 @@ export default class Chat extends React.Component {
           content: this.state.message,
           token: this.state.token,
           roomId: this.props.route.params.roomId,
+          attachment,
         },
       })
     );
     this.messageInput.clear();
     this.setState({ message: "" });
     this.handleTyping(null);
+  }
+  async handleMediaUpload() {
+    let permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+      alert("Permission to access camera roll is required!");
+      return;
+    }
+
+    let pickerResult = await ImagePicker.launchImageLibraryAsync({
+      base64: true,
+    });
+    if (pickerResult.cancelled) return;
+    const data = pickerResult.base64;
+    this.sendMessage(data);
   }
   componentDidMount() {
     const { username, roomId } = this.props.route.params;
@@ -166,6 +196,22 @@ export default class Chat extends React.Component {
     }
     this.initWs();
   }
+  handleAnimation = () => {
+    Animated.timing(this.state.imageAnimation, {
+      toValue: 1,
+      duration: 300,
+      easing: Easing.ease,
+      useNativeDriver: true,
+    }).start();
+  };
+  handleQuit = () => {
+    Animated.timing(this.state.imageAnimation, {
+      toValue: 0,
+      duration: 300,
+      easing: Easing.ease,
+      useNativeDriver: true,
+    }).start();
+  };
   render() {
     return (
       <View style={styles.main_container}>
@@ -203,6 +249,7 @@ export default class Chat extends React.Component {
               keyExtractor={(item, index) => index.toString()}
               renderItem={({ item }) => (
                 <MessageContainer
+                  thisArg={this}
                   props={item}
                   isMe={item.baseAuthor === this.state.baseAuthor}
                 />
@@ -214,6 +261,20 @@ export default class Chat extends React.Component {
           <Typing users={this.state.usersTyping} />
         ) : null}
         <View style={styles.message_input_holder}>
+          <TouchableOpacity onPress={() => this.handleMediaUpload()}>
+            <Image
+              source={attachment_icon}
+              style={{
+                width: 45,
+                height: 45,
+                margin: 0,
+                borderRadius: 0,
+                overflow: "hidden",
+                marginRight: 10,
+                marginTop: 10,
+              }}
+            ></Image>
+          </TouchableOpacity>
           <TextInput
             ref={(ref) => (this.messageInput = ref)}
             style={styles.message_input}
@@ -239,6 +300,28 @@ export default class Chat extends React.Component {
             ></Image>
           </TouchableOpacity>
         </View>
+        {this.state.imagePreview ? (
+          <Animated.View
+            style={styles.image_holder}
+            onStartShouldSetResponder={() => {
+              this.handleQuit();
+              setTimeout(() => {
+                this.setState({ imagePreview: null });
+              }, 300);
+              return true;
+            }}
+          >
+            <Animated.Image
+              style={{
+                width: "80%",
+                height: "80%",
+                resizeMode: "contain",
+                transform: [{ scale: this.state.imageAnimation }],
+              }}
+              source={{ uri: `data:image;base64,${this.state.imagePreview}` }}
+            />
+          </Animated.View>
+        ) : null}
       </View>
     );
   }
@@ -247,6 +330,14 @@ const styles = StyleSheet.create({
   main_container: {
     height: "100%",
     width: "100%",
+  },
+  image_holder: {
+    position: "absolute",
+    height: "100%",
+    width: "100%",
+    backgroundColor: "rgba(0,0,0,0.7)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   message_input_holder: {
     bottom: 0,
@@ -266,7 +357,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderWidth: 1,
     borderColor: "#ccc",
-    width: "80%",
+    width: "70%",
     borderRadius: 33,
     padding: 10,
     marginBottom: 5,

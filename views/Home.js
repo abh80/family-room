@@ -34,7 +34,12 @@ export default class Home extends Component {
       useNativeDriver: true,
     }).start();
   }
-  componentDidMount() {}
+  componentDidMount() {
+    this.props.navigation.navigate("Chat", {
+      roomId: "123456789012",
+      username: "test",
+    });
+  }
   render() {
     return (
       <View style={styles.container}>
@@ -106,26 +111,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   family: {
-    top: 0,
-    position: "absolute",
     fontFamily: "Roboto-Bold",
     color: "#121212",
     height: 68,
-    width: 250,
     fontSize: 50,
-    textAlign: "left",
-    left: 0,
+    textAlign: "center",
+    width: 200,
+    marginRight: 200,
   },
   room: {
-    top: 64,
-    left: 0,
-    position: "absolute",
     fontFamily: "Roboto-Bold",
     color: "#121212",
-    height: 67,
-    width: 250,
+    height: 68,
     fontSize: 50,
-    textAlign: "right",
+    textAlign: "center",
+
+    marginLeft: 100,
   },
   familyStack: {
     width: 250,
@@ -148,8 +149,7 @@ const styles = StyleSheet.create({
     fontFamily: "roboto-regular",
     color: "rgba(255,255,255,1)",
     fontSize: 32,
-    marginLeft: 39,
-    marginTop: 2,
+
     textAlign: "center",
   },
   button: {
@@ -163,6 +163,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     flexDirection: "row",
     backgroundColor: "rgba(66,167,255,1)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   button1: {
     width: 140,
@@ -175,13 +177,13 @@ const styles = StyleSheet.create({
     borderStyle: "solid",
     flexDirection: "row",
     backgroundColor: "rgba(189,16,224,1)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   start: {
     fontFamily: "roboto-regular",
     color: "rgba(255,255,255,1)",
     fontSize: 32,
-    marginLeft: 36,
-    marginTop: 2,
     textAlign: "center",
   },
   buttonRow: {
@@ -197,19 +199,24 @@ const styles = StyleSheet.create({
     fontFamily: "roboto-regular",
     color: "rgba(74,144,226,1)",
     fontSize: 18,
+    left: "7%",
+    position: "absolute",
+    flexDirection: "row",
   },
   createARoom: {
     fontFamily: "roboto-regular",
     color: "rgba(189,16,224,1)",
     fontSize: 18,
-    right: "3%",
+    right: "17%",
     position: "absolute",
   },
   joinARoomRow: {
-    height: 22,
+    height: 49,
     flexDirection: "row",
-    marginTop: 8,
-    marginLeft: 59,
-    marginRight: 50,
+    marginTop: 2,
+    marginLeft: 17,
+    marginRight: 17,
+    width: "100%",
+    flexWrap: "wrap",
   },
 });
