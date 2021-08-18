@@ -318,7 +318,7 @@ export default class Chat extends React.Component {
                 resizeMode: "contain",
                 transform: [{ scale: this.state.imageAnimation }],
               }}
-              source={{ uri: `data:image;base64,${this.state.imagePreview}` }}
+              source={{ uri: this.state.imagePreview }}
             />
           </Animated.View>
         ) : null}

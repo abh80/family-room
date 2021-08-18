@@ -34,12 +34,7 @@ export default class Home extends Component {
       useNativeDriver: true,
     }).start();
   }
-  componentDidMount() {
-    this.props.navigation.navigate("Chat", {
-      roomId: "123456789012",
-      username: "test",
-    });
-  }
+  componentDidMount() {}
   render() {
     return (
       <View style={styles.container}>
