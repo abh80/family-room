@@ -102,7 +102,7 @@ export default function Message({ isMe, props, thisArg }) {
       ) : null}
       {embeds.map((embed, index) => {
         let image = embed.ogImage || embed.twitterImage;
-       
+
         return (
           <View key={index} style={styles.embed}>
             <View
@@ -202,6 +202,7 @@ const styles = StyleSheet.create({
     textAlign: "right",
     fontFamily: "Roboto-Regular",
     color: "#555657",
+    marginTop: 3,
   },
   systemMessage: {
     width: "70%",

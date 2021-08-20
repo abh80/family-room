@@ -5,6 +5,7 @@ import {
   Text,
   TouchableOpacity,
   Animated,
+  DeviceEventEmitter,
 } from "react-native";
 import Register from "../components/register";
 import Login from "../components/login";
@@ -34,7 +35,11 @@ export default class Home extends Component {
       useNativeDriver: true,
     }).start();
   }
-  componentDidMount() {}
+  componentDidMount() {
+    DeviceEventEmitter.addListener("hello", () => {
+      alert("hello");
+    });
+  }
   render() {
     return (
       <View style={styles.container}>
